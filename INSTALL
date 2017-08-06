@@ -1,0 +1,9 @@
+Building MFCoin
+
+See doc/readme-qt.rst for instructions on building MFCoin-Qt,
+the intended-for-end-users, nice-graphical-interface, reference
+implementation of MFCoin.
+
+See doc/build-*.txt for instructions on building MFCoind,
+the intended-for-services, no-graphical-interface, reference
+implementation of MFCoin.
