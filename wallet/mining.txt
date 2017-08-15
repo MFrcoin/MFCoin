@@ -1,0 +1,37 @@
+How to mine  from the wallet(QT client).(CPU mine)
+
+1. Open Wallet.
+2. Choose Help.
+3. Select Debug window.
+4. Select Console.
+5. Type “setgenerate true -1” to use all processing cores.
+
+Note : If you want to use 2 / 4/ 6 cores then use “setgenerate true 4” command to use 4 cores (change the number if u need to)
+       If you want end mining type "setgenerate true 0".
+
+Next step:Now you have to check if your client is mining or not, just type “getmininginfo” command  in that same window,
+          you should start to see your hashespersec reported as following.
+
+
+{
+"blocks" : 7750,
+"currentblocksize" : 1000,
+"currentblocktx" : 0,
+"difficulty" : 0.00955156,
+"errors" : "",
+"generate" : true,
+"genproclimit" : -1,
+"hashespersec" : 573,
+"networkhashps" : 7380675,
+"pooledtx" : 0,
+"testnet" : false
+}
+
+
+Now you should start to see your hashespersec reported, if hashespersec is not zero, you’re doing it right.
+
+You can also check some other stats with following commands.
+
+getdifficulty
+
+getinfo
