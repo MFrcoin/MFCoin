@@ -2,8 +2,8 @@ Building MFCoin
 
 See doc for instructions on building MFCoin
 
-[CentOS 7](doc/MFCoind-CentOS7-build.md)
-[Ubuntu16](doc/MFCoind-Ubuntu16-build.md)
+CentOS7   doc/MFCoind-CentOS7-build.md
+Ubuntu16  doc/MFCoind-Ubuntu16-build.md
 
 See doc/readme-qt.rst for instructions on building MFCoin-Qt,
 the intended-for-end-users, nice-graphical-interface, reference
