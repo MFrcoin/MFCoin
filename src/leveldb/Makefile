@@ -18,7 +18,7 @@ $(shell CC=$(CC) CXX=$(CXX) TARGET_OS=$(TARGET_OS) \
 include build_config.mk
 
 CFLAGS += -I. -I./include $(PLATFORM_CCFLAGS) $(OPT)
-CXXFLAGS += -I. -I./include $(PLATFORM_CXXFLAGS) $(OPT)
+CXXFLAGS += -I. -I./include $(PLATFORM_CXXFLAGS) $(OPT) -I/usr/include/libdb4 -L/usr/lib64/libdb4
 
 LDFLAGS += $(PLATFORM_LDFLAGS)
 LIBS += $(PLATFORM_LIBS)

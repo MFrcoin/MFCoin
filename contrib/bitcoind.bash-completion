@@ -55,10 +55,6 @@ _bitcoind() {
             _filedir
             return 0
             ;;
-        setgenerate)
-            COMPREPLY=( $( compgen -W "true false" -- "$cur" ) )
-            return 0
-            ;;
         getaccountaddress|getaddressesbyaccount|getbalance|getnewaddress|getreceivedbyaccount|listtransactions|move|sendfrom|sendmany)
             _bitcoin_accounts
             return 0

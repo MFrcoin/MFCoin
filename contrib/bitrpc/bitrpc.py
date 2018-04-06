@@ -85,12 +85,6 @@ elif cmd == "getdifficulty":
 	except:
 		print "\n---An error occurred---\n"
 
-elif cmd == "getgenerate":
-	try:
-		print access.getgenerate()
-	except:
-		print "\n---An error occurred---\n"
-
 elif cmd == "gethashespersec":
 	try:
 		print access.gethashespersec()
@@ -266,17 +260,6 @@ elif cmd == "setaccount":
 		addr = raw_input("Address: ")
 		acct = raw_input("Account:")
 		print access.setaccount(addr,acct)
-	except:
-		print "\n---An error occurred---\n"
-
-elif cmd == "setgenerate":
-	try:
-		gen= raw_input("Generate? (true/false): ")
-		cpus = raw_input("Max processors/cores (-1 for unlimited, optional):")
-		try:
-			print access.setgenerate(gen, cpus)
-		except:
-			print access.setgenerate(gen)
 	except:
 		print "\n---An error occurred---\n"
 
