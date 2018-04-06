@@ -4703,7 +4703,7 @@ void static MFCoinMiner(CWallet *pwallet)
     }
 }
 
-void GenerateBitcoins(bool fGenerate, CWallet* pwallet)
+/*void GenerateBitcoins(bool fGenerate, CWallet* pwallet)
 {
     static boost::thread_group* minerThreads = NULL;
 
@@ -4724,7 +4724,7 @@ void GenerateBitcoins(bool fGenerate, CWallet* pwallet)
     minerThreads = new boost::thread_group();
     for (int i = 0; i < nThreads; i++)
         minerThreads->create_thread(boost::bind(&MFCoinMiner, pwallet));
-}
+}*/
 
 // Amount compression:
 // * If the amount is 0, output 0
