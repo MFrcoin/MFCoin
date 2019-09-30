@@ -1,0 +1,20 @@
+#!/usr/bin/make -f
+# -*- mode: makefile; coding: utf-8 -*-
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	if [ -f Makefile ]; then $(MAKE) distclean; fi
+	rm -rf Makefile.in aclocal.m4 configure src/Makefile.in src/bitcoin-config.h.in src/build-aux src/qt/Makefile.in src/qt/test/Makefile.in src/test/Makefile.in
+
+override_dh_auto_configure:
+	./autogen.sh
+	./configure --without-gui
+
+override_dh_auto_test:
+
+override_dh_usrlocal:
+
+override_dh_auto_install:
+	dh_auto_install --destdir=debian/tmp

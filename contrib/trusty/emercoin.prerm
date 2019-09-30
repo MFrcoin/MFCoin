@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+. /usr/share/debconf/confmodule
+
+case "$1" in
+  remove|deconfigure|abort-install)
+    rm -f /var/tmp/mfcoin-install.flag
+    pkill -9 -u mfc > /dev/null 2>&1 || true
+    getent passwd mfc >/dev/null && userdel mfc >/dev/null 2>&1 || true
+    rm -f /etc/ssl/mfc/mfcoin.key /etc/ssl/mfc/mfcoin.crt /etc/mfcoin/mfcoin.conf /etc/mfcoin/certs
+  ;;
+esac
+
+exit 0

@@ -1,0 +1,39 @@
+Source: mfcoin
+Section: utils
+Priority: optional
+Maintainer: Aspanta Limited <info@aspanta.com>
+Build-Depends: build-essential,
+ devscripts,
+ autoconf,
+ automake,
+ dh-make,
+ libtool,
+ pkg-config,
+ libboost-all-dev,
+ libaudit-dev,
+ libssl-dev,
+ libdb4.8-dev,
+ libdb4.8++-dev,
+ libminiupnpc-dev,
+ libevent-dev,
+ libqrencode-dev,
+ libprotobuf-dev,
+ protobuf-compiler,
+ python3
+
+Package: mfcoin
+Architecture: any
+Description: MFCoin Client
+Pre-Depends: debconf
+Depends: ${shlibs:Depends},
+ openssl,
+ libdb4.8,
+ libdb4.8++,
+ miniupnpc,
+ libboost-system-dev,
+ libboost-filesystem-dev,
+ libboost-chrono-dev,
+ libboost-program-options-dev,
+ libboost-test-dev,
+ libboost-thread-dev,
+ logrotate
