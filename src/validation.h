@@ -227,7 +227,7 @@ extern int64_t nLastCoinStakeSearchInterval;
 static const int64_t MAX_TX_AGE = 72 * 60 * 60;
 
 static const int64_t forkStartHeight = 0;
-static const int64_t forkHeightRange = 366;
+static const int64_t forkHeightRange = 365;
 static const int64_t forkCBPerBlock = 2000;
 
 /**

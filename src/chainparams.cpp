@@ -142,7 +142,7 @@ static CBlock CreateGenesisBlock(const char* pszTimestamp, const CScript& genesi
  */
 static CBlock CreateGenesisBlock(uint32_t nTimeTx, uint32_t nTimeBlock, uint32_t nNonce, uint32_t nBits, int32_t nVersion, const CAmount& genesisReward)
 {
-    const char* pszTimestamp = "2013: Emergence is inevitable! heideg.livejournal.com/313676.html";
+    const char* pszTimestamp = "ANIMA = VISITA INTERIORA TERRAE RECTIFICANDO INUENIES OCCULTUM LAPIDEM = SPIRITUS + CORPUS";
     const CScript genesisOutputScript = CScript();
     return CreateGenesisBlock(pszTimestamp, genesisOutputScript, nTimeTx, nTimeBlock, nNonce, nBits, nVersion, genesisReward);
 }
@@ -299,15 +299,15 @@ public:
         nDefaultPort = 22824;
         nPruneAfterHeight = 100000;
 
-        genesis = CreateGenesisBlock(1567150000, 1567150000, 1, 0x1f0fffff, 1, 0);
-        genesis.mtpHashValue = uint256S("0x0005b98d39f3303e5585e5e0974a9c5e65e82c68fbefff15f713c122a1f67f2a");
-        //genesis.mtpHashValue = mineMtp(genesis, consensus.powLimit);
-        //writeGenesisData(genesis, "genesis.dat");
+        genesis = CreateGenesisBlock(1569921283, 1569921283, 5373, 0x1f0fffff, 1, 0);
+        genesis.mtpHashValue = uint256S("0x000c2dcee2bd9d180c95f42a40006e3c6ca2db1c0a0863b6dd359940641ef999");
+        // genesis.mtpHashValue = mineMtp(genesis, consensus.powLimit);
+        // writeGenesisData(genesis, "genesis.dat");
         readGenesisData(genesis, (GetDefaultEnvPath() / "genesis.dat").string());
         consensus.hashGenesisBlock = genesis.GetHash();
-        //printGenesisParams(genesis);
-        assert(consensus.hashGenesisBlock == uint256S("0x75ad154b25b38fd1050704ec2a20c3ba9d1f638c926f5a05ea8a131fd198492d"));
-        assert(genesis.hashMerkleRoot == uint256S("0xa6aa51dcd7fda5c7a760de48221d2e23ac020752a12c02616f5916fb3529d332"));
+        // printGenesisParams(genesis);
+        assert(consensus.hashGenesisBlock == uint256S("0xe237705166fe5c4da57e166b22e4ddb37793d9bd416481dba0febae743f30706"));
+        assert(genesis.hashMerkleRoot == uint256S("0xe8e2b49a9a97e28cb5a977cd588e36ca0ee73554164f9cfc337cff26fcbc1b70"));
 
         // Note that of those with the service bits flag, most only support a subset of possible options
         vSeeds.push_back(CDNSSeedData("mfcoin1", "n1.mfcoin.net"));
@@ -327,10 +327,8 @@ public:
         fRequireStandard = true;
         fMineBlocksOnDemand = false;
 
-        checkpointData = (CCheckpointData) {
-            boost::assign::map_list_of
-            ( 0,     uint256S("0x75ad154b25b38fd1050704ec2a20c3ba9d1f638c926f5a05ea8a131fd198492d"))
-        };
+        checkpointData = (CCheckpointData){
+            boost::assign::map_list_of(0, uint256S("0xe237705166fe5c4da57e166b22e4ddb37793d9bd416481dba0febae743f30706"))};
 
         chainTxData = ChainTxData{
             // Data as of block ???

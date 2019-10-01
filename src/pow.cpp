@@ -46,13 +46,13 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
     bnNew.SetCompact(pindexPrev->nBits);
 
     // mfcoin: first 222 blocks are faster to mine.
-    int64_t nSpacingRatio = (pindexLast->nHeight <= 366) ? max((int64_t)10, params.nStakeTargetSpacing * pindexLast->nHeight / 366) :
+    int64_t nSpacingRatio = (pindexLast->nHeight <= 365) ? max((int64_t)10, params.nStakeTargetSpacing * pindexLast->nHeight / 365) :
                                                              max((int64_t)10, params.nStakeTargetSpacing);
 
     int64_t nTargetSpacing = fProofOfStake? params.nStakeTargetSpacing : min(params.nTargetSpacingMax, nSpacingRatio * (1 + pindexLast->nHeight - pindexPrev->nHeight));
     int64_t nInterval = params.nTargetTimespan / nTargetSpacing;
 
-    int n = fProofOfStake ? 1 : ((pindexLast->nHeight < 366) ? 1 : 3);
+    int n = fProofOfStake ? 1 : ((pindexLast->nHeight < 365) ? 1 : 3);
     bnNew *= ((nInterval - n) * nTargetSpacing + (n + 1) * nActualSpacing);
     bnNew /= ((nInterval + 1) * nTargetSpacing);
 
