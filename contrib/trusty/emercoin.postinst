@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+. /usr/share/debconf/confmodule
+
+case "$1" in
+  configure)
+    sed -i -e "s/\(^rpcpassword=MySuperPassword\)\(.*\)/rpcpassword=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)/" /var/lib/mfc/.mfcoin/mfcoin.conf
+    chmod 600 /var/lib/mfc/.mfcoin/mfcoin.conf
+    chown -R mfc.mfc /var/lib/mfc/.mfcoin /usr/bin/mfcoin-cli
+    chmod 4750 /usr/bin/mfcoin-cli
+    mkdir -p /etc/mfcoin
+    ln -sf /var/lib/mfc/.mfcoin/mfcoin.conf /etc/mfcoin/mfcoin.conf || true
+    ln -sf /etc/ssl/mfc /etc/mfcoin/certs || true
+    [ -f /var/tmp/mfcoin-install.flag ] && {
+      rm -f /var/tmp/mfcoin-install.flag
+      update-rc.d mfcoind defaults
+    }
+    service mfcoind status >/dev/null && service mfcoind restart >/dev/null
+  ;;
+esac
+
+exit 0

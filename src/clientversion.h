@@ -1,28 +1,81 @@
-#ifndef CLIENTVERSION_H
-#define CLIENTVERSION_H
+// Copyright (c) 2009-2016 The Bitcoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-//
-// client versioning and copyright year
-//
+#ifndef BITCOIN_CLIENTVERSION_H
+#define BITCOIN_CLIENTVERSION_H
 
-// These need to be macros, as version.cpp's and bitcoin-qt.rc's voodoo requires it
-#define CLIENT_VERSION_MAJOR       1
-#define CLIENT_VERSION_MINOR       0
-#define CLIENT_VERSION_REVISION    0
-#define CLIENT_VERSION_BUILD       1
+#if defined(HAVE_CONFIG_H)
+#include "config/bitcoin-config.h"
+#else
 
-// did not update version
+/**
+ * client versioning and copyright year
+ */
 
-// Set to true for release, false for prerelease or test build
-#define CLIENT_VERSION_IS_RELEASE  true
+//! These need to be macros, as clientversion.cpp's and bitcoin*-res.rc's voodoo requires it
+#define CLIENT_VERSION_MAJOR 0
+#define CLIENT_VERSION_MINOR 14
+#define CLIENT_VERSION_REVISION 2
 
-// Copyright year (2009-this)
-// Todo: update this when changing our copyright comments in the source
-#define COPYRIGHT_YEAR 2016
+#define MFCOIN_VERSION_MAJOR 0
+#define MFCOIN_VERSION_MINOR 7
+#define MFCOIN_VERSION_REVISION 9
 
-// Converts the parameter X to a string after macro replacement on X has been performed.
-// Don't merge these into one macro!
+#define CLIENT_VERSION_BUILD 0
+
+//! Set to true for release, false for prerelease or test build
+#define CLIENT_VERSION_IS_RELEASE true
+
+/**
+ * Copyright year (2009-this)
+ * Todo: update this when changing our copyright comments in the source
+ */
+#define COPYRIGHT_YEAR 2018
+
+#endif //HAVE_CONFIG_H
+
+/**
+ * Converts the parameter X to a string after macro replacement on X has been performed.
+ * Don't merge these into one macro!
+ */
 #define STRINGIZE(X) DO_STRINGIZE(X)
 #define DO_STRINGIZE(X) #X
 
-#endif // CLIENTVERSION_H
+//! Copyright string used in Windows .rc files
+#define COPYRIGHT_STR "2013-" STRINGIZE(COPYRIGHT_YEAR) " " COPYRIGHT_HOLDERS_FINAL
+
+/**
+ * bitcoind-res.rc includes this file, but it cannot cope with real c++ code.
+ * WINDRES_PREPROC is defined to indicate that its pre-processor is running.
+ * Anything other than a define should be guarded below.
+ */
+
+#if !defined(WINDRES_PREPROC)
+
+#include <string>
+#include <vector>
+
+static const int CLIENT_VERSION =
+                           1000000 * CLIENT_VERSION_MAJOR
+                         +   10000 * CLIENT_VERSION_MINOR
+                         +     100 * CLIENT_VERSION_REVISION
+                         +       1 * CLIENT_VERSION_BUILD;
+
+// note: mfcoin version is used for display purpose AND to accept alerts
+static const int MFCOIN_VERSION =
+                           1000000 * MFCOIN_VERSION_MAJOR
+                         +   10000 * MFCOIN_VERSION_MINOR
+                         +     100 * MFCOIN_VERSION_REVISION
+                         +       1 * CLIENT_VERSION_BUILD;
+
+extern const std::string CLIENT_NAME;
+extern const std::string CLIENT_BUILD;
+
+
+std::string FormatFullVersion();
+std::string FormatSubVersion(const std::string& name, int nClientVersion, const std::vector<std::string>& comments);
+
+#endif // WINDRES_PREPROC
+
+#endif // BITCOIN_CLIENTVERSION_H

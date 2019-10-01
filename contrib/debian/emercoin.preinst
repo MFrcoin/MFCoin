@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+. /usr/share/debconf/confmodule
+
+case "$1" in
+  install)
+    getent passwd mfc >/dev/null || {
+      groupadd -r mfc && useradd -r -m -d /var/lib/mfc -k /dev/null -s /bin/false -g mfc mfc
+    }
+    [ ! -f /etc/ssl/mfc/mfcoin.key ] || [ ! -f /etc/ssl/mfc/mfcoin.crt ] && {
+      mkdir -p /etc/ssl/mfc
+      openssl req -nodes -x509 -newkey rsa:4096 -keyout /etc/ssl/mfc/mfcoin.key -out /etc/ssl/mfc/mfcoin.crt -days 3560 -subj /C=CY/L=Nicosia/O=MFCoin/CN=mfcoin.local >/dev/null 2>&1
+      chown mfc.mfc /etc/ssl/mfc/mfcoin.key /etc/ssl/mfc/mfcoin.crt
+      chmod 600 /etc/ssl/mfc/mfcoin.key
+    }
+    touch /var/tmp/mfcoin-install.flag
+  ;;
+esac
+
+exit 0

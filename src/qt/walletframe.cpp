@@ -1,28 +1,25 @@
-/*
- * Qt4 bitcoin GUI.
- *
- * W.J. van der Laan 2011-2012
- * The Bitcoin Developers 2011-2013
- */
+// Copyright (c) 2011-2016 The Bitcoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "walletframe.h"
 #include "bitcoingui.h"
-#include "walletstack.h"
 #include "walletview.h"
 
+#include <cstdio>
 #include <QHBoxLayout>
-#include <QMessageBox>
 #include <QLabel>
 
-WalletFrame::WalletFrame(BitcoinGUI *_gui) :
+WalletFrame::WalletFrame(const PlatformStyle *_platformStyle, BitcoinGUI *_gui) :
     QFrame(_gui),
     gui(_gui),
-    clientModel(0)
+    platformStyle(_platformStyle)
 {
+    Q_ASSERT(_gui);
     // Leave HBox hook for adding a list view later
     QHBoxLayout *walletFrameLayout = new QHBoxLayout(this);
     setContentsMargins(0,0,0,0);
-    walletStack = new WalletStack(this);
-    walletStack->setBitcoinGUI(gui);
+    walletStack = new QStackedWidget(this);
     walletFrameLayout->setContentsMargins(0,0,0,0);
     walletFrameLayout->addWidget(walletStack);
 
@@ -35,74 +32,112 @@ WalletFrame::~WalletFrame()
 {
 }
 
-void WalletFrame::setClientModel(ClientModel *clientModel)
+void WalletFrame::setClientModel(ClientModel *_clientModel)
 {
-    this->clientModel = clientModel;
-    walletStack->setClientModel(clientModel);
+    this->clientModel = _clientModel;
 }
 
 bool WalletFrame::addWallet(const QString& name, WalletModel *walletModel)
 {
-    return walletStack->addWallet(name, walletModel);
+    if (!gui || !clientModel || !walletModel || mapWalletViews.count(name) > 0)
+        return false;
+
+    WalletView *walletView = new WalletView(platformStyle, this);
+    walletView->setBitcoinGUI(gui);
+    walletView->setClientModel(clientModel);
+    walletView->setWalletModel(walletModel);
+    walletView->showOutOfSyncWarning(bOutOfSync);
+
+     /* TODO we should goto the currently selected page once dynamically adding wallets is supported */
+    walletView->gotoOverviewPage();
+    walletStack->addWidget(walletView);
+    mapWalletViews[name] = walletView;
+
+    // Ensure a walletView is able to show the main window
+    connect(walletView, SIGNAL(showNormalIfMinimized()), gui, SLOT(showNormalIfMinimized()));
+    connect(walletView, &WalletView::outOfSyncWarningClicked, this, &WalletFrame::outOfSyncWarningClicked);
+
+    return true;
 }
 
 bool WalletFrame::setCurrentWallet(const QString& name)
 {
-    // TODO: Check if valid name
-    walletStack->setCurrentWallet(name);
+    if (mapWalletViews.count(name) == 0)
+        return false;
+
+    WalletView *walletView = mapWalletViews.value(name);
+    walletStack->setCurrentWidget(walletView);
+    walletView->updateEncryptionStatus();
+    return true;
+}
+
+bool WalletFrame::removeWallet(const QString &name)
+{
+    if (mapWalletViews.count(name) == 0)
+        return false;
+
+    WalletView *walletView = mapWalletViews.take(name);
+    walletStack->removeWidget(walletView);
     return true;
 }
 
 void WalletFrame::removeAllWallets()
 {
-    walletStack->removeAllWallets();
+    for (auto view: mapWalletViews.values())
+        walletStack->removeWidget(view);
+    mapWalletViews.clear();
 }
 
-bool WalletFrame::handleURI(const QString &uri)
+bool WalletFrame::handlePaymentRequest(const SendCoinsRecipient &recipient)
 {
     WalletView *walletView = currentWalletView();
     if (!walletView)
         return false;
 
-    return walletStack->handleURI(uri);
+    return walletView->handlePaymentRequest(recipient);
 }
 
 void WalletFrame::showOutOfSyncWarning(bool fShow)
 {
-    if (!walletStack) {
-        QMessageBox box;
-        box.setText("walletStack is null");
-        box.exec();
-        return;
-    }
-    walletStack->showOutOfSyncWarning(fShow);
+    bOutOfSync = fShow;
+    for (auto view: mapWalletViews.values())
+        view->showOutOfSyncWarning(fShow);
 }
 
 void WalletFrame::gotoOverviewPage()
 {
-    walletStack->gotoOverviewPage();
+    for (auto view: mapWalletViews.values())
+        view->gotoOverviewPage();
 }
 
 void WalletFrame::gotoHistoryPage()
 {
-    walletStack->gotoHistoryPage();
-}
-
-void WalletFrame::gotoAddressBookPage()
-{
-    WalletView *walletView = currentWalletView();
-    if (walletView)
-        walletStack->gotoAddressBookPage();
+    for (auto view: mapWalletViews.values())
+        view->gotoHistoryPage();
 }
 
 void WalletFrame::gotoReceiveCoinsPage()
 {
-    walletStack->gotoReceiveCoinsPage();
+    for (auto view: mapWalletViews.values())
+        view->gotoReceiveCoinsPage();
 }
 
 void WalletFrame::gotoSendCoinsPage(QString addr)
 {
-    walletStack->gotoSendCoinsPage(addr);
+    for (auto view: mapWalletViews.values())
+        view->gotoSendCoinsPage(addr);
+}
+
+void WalletFrame::gotoManageNamesPage()
+{
+    for (auto view: mapWalletViews.values())
+        view->gotoManageNamesPage();
+}
+
+void WalletFrame::gotoMintingPage()
+{
+    for (auto view: mapWalletViews.values())
+        view->gotoMintingPage();
 }
 
 void WalletFrame::gotoSignMessageTab(QString addr)
@@ -147,11 +182,18 @@ void WalletFrame::unlockWallet()
         walletView->unlockWallet();
 }
 
-void WalletFrame::setEncryptionStatus()
+void WalletFrame::usedSendingAddresses()
 {
     WalletView *walletView = currentWalletView();
     if (walletView)
-        walletStack->setEncryptionStatus();
+        walletView->usedSendingAddresses();
+}
+
+void WalletFrame::usedReceivingAddresses()
+{
+    WalletView *walletView = currentWalletView();
+    if (walletView)
+        walletView->usedReceivingAddresses();
 }
 
 WalletView *WalletFrame::currentWalletView()
@@ -159,3 +201,7 @@ WalletView *WalletFrame::currentWalletView()
     return qobject_cast<WalletView*>(walletStack->currentWidget());
 }
 
+void WalletFrame::outOfSyncWarningClicked()
+{
+    Q_EMIT requestedSyncWarningInfo();
+}

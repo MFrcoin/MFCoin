@@ -1,0 +1,14 @@
+[Unit]
+Description=MFCoin Wallet
+After=network.target
+
+[Service]
+Type=forking
+User=mfc
+ExecStart=/usr/bin/mfcoind -daemon -datadir=/var/lib/mfc/.mfcoin -conf=/var/lib/mfc/.mfcoin/mfcoin.conf -pid=/var/lib/mfc/.mfcoin/mfcoind.pid
+ExecStop=/usr/bin/mfcoin-cli -datadir=/var/lib/mfc/.mfcoin stop
+PIDFile=/var/lib/mfc/.mfcoin/mfcoind.pid
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

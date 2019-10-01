@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 19.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:url(#XMLID_7_);}
+	.st1{fill:#444444;}
+	.st2{fill:#EEEEEE;}
+	.st3{fill:#00ACBE;}
+	.st4{fill:#77DEFF;}
+</style>
+<g id="XMLID_93_">
+	<linearGradient id="XMLID_7_" gradientUnits="userSpaceOnUse" x1="0.5" y1="256" x2="511.5" y2="256">
+		<stop  offset="0" style="stop-color:#7BD0E0"/>
+		<stop  offset="0.4631" style="stop-color:#00ACBE"/>
+		<stop  offset="1" style="stop-color:#187687"/>
+	</linearGradient>
+	<circle id="XMLID_38_" class="st0" cx="256" cy="256" r="255.5"/>
+	<g id="XMLID_40_">
+		<circle id="XMLID_5_" class="st1" cx="256" cy="256" r="219.2"/>
+		<path id="XMLID_43_" class="st2" d="M166.5,219.5c0,68,0,18.2,0,179c160.7,0,111.1,0,179,0c0-68,0-18.2,0-179
+			C277.6,219.5,327.3,219.5,166.5,219.5z M326,379H186V239h140V379z"/>
+		<rect id="XMLID_2_" x="302.8" y="91.8" class="st3" width="19.5" height="70.2"/>
+		<polygon id="XMLID_1_" class="st4" points="382.7,218.4 256.2,91.8 256,92 255.8,91.8 129.3,218.4 143.1,232.3 256,119.3 
+			368.9,232.3 		"/>
+	</g>
+</g>
+</svg>
