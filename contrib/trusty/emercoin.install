@@ -1,0 +1,7 @@
+contrib/trusty/mfc usr/bin
+contrib/trusty/mfcoin.conf var/lib/mfc/.mfcoin
+contrib/trusty/mfcoind etc/init.d
+contrib/trusty/mfcoind.logrotate etc/logrotate.d
+usr/local/bin/mfcoind usr/bin
+usr/local/bin/mfcoin-cli usr/bin
+usr/local/bin/mfcoin-tx usr/bin

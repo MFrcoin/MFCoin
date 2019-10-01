@@ -644,6 +644,36 @@ class Harness {
   Constructor* constructor_;
 };
 
+// Test empty table/block.
+TEST(Harness, Empty) {
+  for (int i = 0; i < kNumTestArgs; i++) {
+    Init(kTestArgList[i]);
+    Random rnd(test::RandomSeed() + 1);
+    Test(&rnd);
+  }
+}
+
+// Special test for a block with no restart entries.  The C++ leveldb
+// code never generates such blocks, but the Java version of leveldb
+// seems to.
+TEST(Harness, ZeroRestartPointsInBlock) {
+  char data[sizeof(uint32_t)];
+  memset(data, 0, sizeof(data));
+  BlockContents contents;
+  contents.data = Slice(data, sizeof(data));
+  contents.cachable = false;
+  contents.heap_allocated = false;
+  Block block(contents);
+  Iterator* iter = block.NewIterator(BytewiseComparator());
+  iter->SeekToFirst();
+  ASSERT_TRUE(!iter->Valid());
+  iter->SeekToLast();
+  ASSERT_TRUE(!iter->Valid());
+  iter->Seek("foo");
+  ASSERT_TRUE(!iter->Valid());
+  delete iter;
+}
+
 // Test the empty key
 TEST(Harness, SimpleEmptyKey) {
   for (int i = 0; i < kNumTestArgs; i++) {
@@ -823,12 +853,20 @@ TEST(TableTest, ApproximateOffsetOfCompressed) {
   options.compression = kSnappyCompression;
   c.Finish(options, &keys, &kvmap);
 
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"),       0,      0));
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"),       0,      0));
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"),       0,      0));
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"),    2000,   3000));
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"),    2000,   3000));
-  ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"),    4000,   6000));
+  // Expected upper and lower bounds of space used by compressible strings.
+  static const int kSlop = 1000;  // Compressor effectiveness varies.
+  const int expected = 2500;  // 10000 * compression ratio (0.25)
+  const int min_z = expected - kSlop;
+  const int max_z = expected + kSlop;
+
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("abc"), 0, kSlop));
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k01"), 0, kSlop));
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k02"), 0, kSlop));
+  // Have now emitted a large compressible string, so adjust expected offset.
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k03"), min_z, max_z));
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("k04"), min_z, max_z));
+  // Have now emitted two large compressible strings, so adjust expected offset.
+  ASSERT_TRUE(Between(c.ApproximateOffsetOf("xyz"), 2 * min_z, 2 * max_z));
 }
 
 }  // namespace leveldb
