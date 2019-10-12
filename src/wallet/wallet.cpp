@@ -2160,7 +2160,7 @@ void CWallet::AvailableCoins(vector<COutput>& vCoins, bool fOnlyConfirmed, const
 }
 
 static void ApproximateBestSubset(vector<pair<CAmount, pair<const CWalletTx*,unsigned int> > >vValue, const CAmount& nTotalLower, const CAmount& nTargetValue,
-                                  vector<char>& vfBest, CAmount& nBest, int iterations = 1000)
+vector<char>& vfBest, CAmount& nBest, int iterations = 1000)
 {
     vector<char> vfIncluded;
 
@@ -2208,7 +2208,7 @@ static void ApproximateBestSubset(vector<pair<CAmount, pair<const CWalletTx*,uns
 static bool CmpDepth(const COutput &a, const COutput &b) { return a.nDepth < b.nDepth; }
 
 bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, const int nConfMine, const int nConfTheirs, const uint64_t nMaxAncestors, vector<COutput> vCoins,
-                                 set<pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const
+set<pair<const CWalletTx*,unsigned int> >& setCoinsRet, CAmount& nValueRet) const
 {
     setCoinsRet.clear();
     nValueRet = 0;
@@ -2220,18 +2220,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, const int nConfMin
     vector<pair<CAmount, pair<const CWalletTx*,unsigned int> > > vValue;
     CAmount nTotalLower = 0;
 
-    static int sortir = -1;
-    if(sortir < 0)
-       sortir = GetArg("-sortir", 0);
-
-    switch(sortir) {
-       case 1:
-         sort(vCoins.begin(), vCoins.end(), CmpDepth);
-         break;
-       default:
-          random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
-         break;
-    } // switch
+    random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
 
     BOOST_FOREACH(const COutput &output, vCoins)
     {
@@ -2291,94 +2280,6 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, const int nConfMin
         return true;
     }
 
-  // If possible, solve subset sum by dynamic programming
-  // Adeed by olegarch
-
-  // Maximal DP array size. Default=0.5G (12,800MFC)
-  static uint32_t nMaxDP = 0;
-  if(nMaxDP == 0)
-      nMaxDP = GetArg("-maxdp", 128 * 1024 * 1024);
-
-  int32_t *dp; 
-  int tgt_shift = -(nTargetValue % TX_DP_AMOUNT > TX_DP_AMOUNT / 2);
-  uint32_t dp_tgt = nTargetValue / TX_DP_AMOUNT - tgt_shift;
-  if(dp_tgt < nMaxDP && (dp = (int32_t *)malloc((dp_tgt + 2) * sizeof(int32_t))) != NULL) {
-    memset(dp, ~0, (dp_tgt + 1) * sizeof(int32_t));
-    dp[dp_tgt + 1] = dp[0] = 0; // Zero CENTs can be reached anyway, and set right barrier
-    
-    uint32_t min_over_sum  = ~0, min_over_txrem;
-
-    // Apply UTXOs to DP array, until exact sum will be found
-    for(int32_t utxo_no = 0;  dp[dp_tgt] < 0 && utxo_no < (int32_t)vValue.size(); utxo_no++) {
-      int32_t saved_tgt = dp[dp_tgt]; // Saved for possible revert, if problem in fraction of TX_DP_AMOUNT
-      uint32_t offset = vValue[utxo_no].first / TX_DP_AMOUNT;
-      int      remain = vValue[utxo_no].first % TX_DP_AMOUNT;
-      int ndx = dp_tgt + 1;
-      int carma = 10 + (int)sqrt(vValue.size());
-      do {
-        if(dp[--ndx] < 0)
-          ndx = ~dp[ndx]; // skip gap
-        uint32_t nxt = ndx + offset;
-	int sumrem   = remain + (uint8_t)dp[ndx];
-	if(sumrem >= TX_DP_AMOUNT) {
-	  nxt++;
-          sumrem -= TX_DP_AMOUNT;
-	}
-	sumrem |= utxo_no << 8;
-        if(nxt <= dp_tgt) {
-           if(dp[nxt] < 0) {
-             dp[nxt] = sumrem;
-	     int rval = ~nxt;
-	     while(dp[++nxt] < 0)
-               dp[nxt] = rval;
-	     carma += 2;
-	   } else
-	     carma--;
-        } else
-          if(nxt < min_over_sum) {
-             min_over_sum = nxt;
-	     min_over_txrem = sumrem;
-          }
-      } while(ndx != 0 && carma > 0);
-      if(dp[dp_tgt] >= 0 && (carma = (int)(uint8_t)dp[dp_tgt] - nTargetValue % TX_DP_AMOUNT) && (carma ^ tgt_shift) < 0)
-         dp[dp_tgt] = saved_tgt; // Rollback target, if subcent fraction is not enough/over
-    } // for
-
-    if(dp[dp_tgt] >= 0) // Found exactly sum without payback
-       min_over_txrem = dp[min_over_sum = dp_tgt];
-    else
-      if(min_over_sum == (uint32_t)~0)   // Special case: Total bal > nTargetValue, but dp_bal is still less
-        min_over_sum = 0;       // So, skip DP, use the original stochastic algo
-
-    while(min_over_sum) {
-      uint32_t utxo_no = min_over_txrem >> 8;
-      uint8_t  remain  = min_over_txrem;
-      if (fDebug && GetBoolArg("-printselectcoin", false))
-        LogPrintf("SelectCoins() DP Added #%u: Val=%s\n", utxo_no, FormatMoney(vValue[utxo_no].first));
-      setCoinsRet.insert(vValue[utxo_no].second);
-      nValueRet    += vValue[utxo_no].first;
-      min_over_sum -= vValue[utxo_no].first / TX_DP_AMOUNT + (vValue[utxo_no].first % TX_DP_AMOUNT > remain);
-      min_over_txrem = dp[min_over_sum];
-    }
-
-    free(dp);
-
-    if(nValueRet >= nTargetValue) {
-      //// debug print
-      if (fDebug && GetBoolArg("-printselectcoin", false))
-        LogPrintf("SelectCoins() DP subset: Target=%s Found=%s Payback=%s Qty=%u\n",
-            FormatMoney(nTargetValue),
-            FormatMoney(nValueRet),
-            FormatMoney(nValueRet - nTargetValue),
-               (unsigned)setCoinsRet.size()
-               );
-      return true; // sum found by DP
-    } else {
-       nValueRet = 0;
-       setCoinsRet.clear();
-    }
-  } // DP compute
-
     // Solve subset sum by stochastic approximation
     std::sort(vValue.begin(), vValue.end(), CompareValueOnly());
     std::reverse(vValue.begin(), vValue.end());
@@ -2393,7 +2294,7 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, const int nConfMin
     //                                   or the next bigger coin is closer), return the bigger coin
     if (coinLowestLarger.second.first &&
         ((nBest != nTargetValue && nBest < nTargetValue + MIN_CHANGE) || coinLowestLarger.first <= nBest))
-    {
+        {
         setCoinsRet.insert(coinLowestLarger.second);
         nValueRet += coinLowestLarger.first;
     }
@@ -2425,7 +2326,7 @@ bool CWallet::SelectCoins(const vector<COutput>& vAvailableCoins, const CAmount&
         BOOST_FOREACH(const COutput& out, vCoins)
         {
             if (!out.fSpendable)
-                 continue;
+                continue;
             nValueRet += out.tx->tx->vout[out.i].nValue;
             setCoinsRet.insert(make_pair(out.tx, out.i));
         }
@@ -2457,7 +2358,7 @@ bool CWallet::SelectCoins(const vector<COutput>& vAvailableCoins, const CAmount&
     // remove preset inputs from vCoins
     for (vector<COutput>::iterator it = vCoins.begin(); it != vCoins.end() && coinControl && coinControl->HasSelected();)
     {
-        if (setPresetCoins.count(make_pair(it->tx, it->i)))
+                if (setPresetCoins.count(make_pair(it->tx, it->i)))
             it = vCoins.erase(it);
         else
             ++it;
@@ -2467,13 +2368,13 @@ bool CWallet::SelectCoins(const vector<COutput>& vAvailableCoins, const CAmount&
     bool fRejectLongChains = GetBoolArg("-walletrejectlongchains", DEFAULT_WALLET_REJECT_LONG_CHAINS);
 
     bool res = nTargetValue <= nValueFromPresetInputs ||
-        SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 1, 6, 0, vCoins, setCoinsRet, nValueRet) ||
-        SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 1, 1, 0, vCoins, setCoinsRet, nValueRet) ||
-        (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, 2, vCoins, setCoinsRet, nValueRet)) ||
-        (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, std::min((size_t)4, nMaxChainLength/3), vCoins, setCoinsRet, nValueRet)) ||
-        (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, nMaxChainLength/2, vCoins, setCoinsRet, nValueRet)) ||
-        (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, nMaxChainLength, vCoins, setCoinsRet, nValueRet)) ||
-        (bSpendZeroConfChange && !fRejectLongChains && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, std::numeric_limits<uint64_t>::max(), vCoins, setCoinsRet, nValueRet));
+               SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 1, 6, 0, vCoins, setCoinsRet, nValueRet) ||
+               SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 1, 1, 0, vCoins, setCoinsRet, nValueRet) ||
+               (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, 2, vCoins, setCoinsRet, nValueRet)) ||
+               (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, std::min((size_t)4, nMaxChainLength/3), vCoins, setCoinsRet, nValueRet)) ||
+               (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, nMaxChainLength/2, vCoins, setCoinsRet, nValueRet)) ||
+               (bSpendZeroConfChange && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, nMaxChainLength, vCoins, setCoinsRet, nValueRet)) ||
+               (bSpendZeroConfChange && !fRejectLongChains && SelectCoinsMinConf(nTargetValue - nValueFromPresetInputs, 0, 1, std::numeric_limits<uint64_t>::max(), vCoins, setCoinsRet, nValueRet));
 
     // because SelectCoinsMinConf clears the setCoinsRet, we now add the possible inputs to the coinset
     setCoinsRet.insert(setPresetCoins.begin(), setPresetCoins.end());
