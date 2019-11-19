@@ -33,7 +33,7 @@ remotes:
 files:
 - "MacOSX10.11.sdk.tar.gz"
 - "utxo_snapshot.tar.xz"
-- genesis.tar.xz
+- "genesis.tar.xz"
 script: |
   WRAP_DIR=$HOME/wrapped
   HOSTS="x86_64-apple-darwin11"
