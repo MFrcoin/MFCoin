@@ -22,8 +22,9 @@ public:
 
     enum MintingEnum
     {
-        Minting10min,
         Minting1day,
+        Minting7days,
+        Minting14days,
         Minting30days,
         Minting90days
     };

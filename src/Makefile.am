@@ -76,6 +76,7 @@ endif
 .PHONY: FORCE check-symbols check-security
 # bitcoin core #
 BITCOIN_CORE_H = \
+	genesis.h \
   addrdb.h \
   addrman.h \
   alert.h \

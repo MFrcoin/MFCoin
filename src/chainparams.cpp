@@ -22,6 +22,10 @@
 #include "clientversion.h"
 #include "hash.h"
 
+namespace block0 {
+#include "genesis.h"
+}
+
 
 bool CheckProofOfWork2(uint256 hash, unsigned int nBits, const Consensus::Params& params)
 {
@@ -300,10 +304,14 @@ public:
         nPruneAfterHeight = 100000;
 
         genesis = CreateGenesisBlock(1569921283, 1569921283, 5373, 0x1f0fffff, 1, 0);
+        CDataStream stream((const char*)block0::genesis,
+                            (const char*)&block0::genesis[sizeof(block0::genesis)],
+                            SER_DISK, CLIENT_VERSION);
+        stream >> genesis;
         genesis.mtpHashValue = uint256S("0x000c2dcee2bd9d180c95f42a40006e3c6ca2db1c0a0863b6dd359940641ef999");
         // genesis.mtpHashValue = mineMtp(genesis, consensus.powLimit);
         // writeGenesisData(genesis, "genesis.dat");
-        readGenesisData(genesis, (GetDefaultEnvPath() / "genesis.dat").string());
+        // readGenesisData(genesis, (GetDefaultEnvPath() / "genesis.dat").string());
         consensus.hashGenesisBlock = genesis.GetHash();
         // printGenesisParams(genesis);
         assert(consensus.hashGenesisBlock == uint256S("0xe237705166fe5c4da57e166b22e4ddb37793d9bd416481dba0febae743f30706"));
@@ -389,11 +397,15 @@ public:
         nPruneAfterHeight = 1000;
 
         genesis = CreateGenesisBlock(1560542398, 1560542398, 1, 0x207fffff, 1, 0);
+        CDataStream stream((const char*)block0::genesis_test,
+                            (const char*)&block0::genesis_test[sizeof(block0::genesis_test)],
+                            SER_DISK, CLIENT_VERSION);
+        stream >> genesis;
         //std::cout << "testnet\n";
         //mineMtp(genesis, consensus.powLimit);
         genesis.mtpHashValue = uint256S("0x7d33e93c826a8b7ea2f7c5fb14677a440994844ae2df1faad93af04f63c84b54");
         //writeGenesisData(genesis, "genesis-test.dat");
-        readGenesisData(genesis, (GetDefaultEnvPath() / "genesis-test.dat").string());
+        //readGenesisData(genesis, (GetDefaultEnvPath() / "genesis-test.dat").string());
         //printGenesisParams(genesis, true);
         consensus.hashGenesisBlock = genesis.GetHash();
         assert(consensus.hashGenesisBlock == uint256S("0xb98c3956a2fc4ad9027cd8858dc32fba36f5bfdb01e64856879d393f34297013"));
@@ -484,10 +496,14 @@ public:
 
         //std::cout << "regtestnet\n";
         genesis = CreateGenesisBlock(1386627289, 1386628033, 0, 0x207fffff, 1, 0);
+        CDataStream stream((const char*)block0::genesis_reg,
+                            (const char*)&block0::genesis_reg[sizeof(block0::genesis_reg)],
+                            SER_DISK, CLIENT_VERSION);
+         stream >> genesis;
         //printGenesisParams(genesis, true);
         //mineMtp(genesis, consensus.powLimit);
         genesis.mtpHashValue = uint256S("0x3ec0a8bf848217723029c2df2a7d3e5ed1fac7d4f30f52b604759ec7a5d479fa");
-        readGenesisData(genesis, (GetDefaultEnvPath() / "genesis-reg.dat").string());
+        //readGenesisData(genesis, (GetDefaultEnvPath() / "genesis-reg.dat").string());
         //printGenesisParams(genesis, true);
         //std::cout << "!!\n" << genesis.mtpHashData->toString() << "!!\n";
         consensus.hashGenesisBlock = genesis.GetHash();
