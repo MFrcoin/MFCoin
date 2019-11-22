@@ -5,15 +5,15 @@ define(_CLIENT_VERSION_MINOR, 14)
 define(_CLIENT_VERSION_REVISION, 2)
 
 define(_MFCOIN_VERSION_MAJOR, 0)
-define(_MFCOIN_VERSION_MINOR, 7)
-define(_MFCOIN_VERSION_REVISION, 10)
+define(_MFCOIN_VERSION_MINOR, 8)
+define(_MFCOIN_VERSION_REVISION, 0)
 
 define(_CLIENT_VERSION_BUILD, 0)
 define(_CLIENT_VERSION_IS_RELEASE, true)
 define(_COPYRIGHT_YEAR, 2019)
 define(_COPYRIGHT_HOLDERS,[The %s developers])
 define(_COPYRIGHT_HOLDERS_SUBSTITUTION,[[MFCoin Core]])
-AC_INIT([MFCoin Core],[_MFCOIN_VERSION_MAJOR._MFCOIN_VERSION_MINOR._MFCOIN_VERSION_REVISION],[info@mfcoin.net],[mfcoin])
+AC_INIT([MFCoin Core],[_MFCOIN_VERSION_MAJOR._MFCOIN_VERSION_MINOR._MFCOIN_VERSION_REVISION],[freeland@mfcoin.net],[mfcoin])
 AC_CONFIG_SRCDIR([src/validation.cpp])
 AC_CONFIG_HEADERS([src/config/bitcoin-config.h])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -1181,7 +1181,7 @@ case ${OS} in
    ;;
 esac
 
-echo 
+echo
 echo "Options used to compile and link:"
 echo "  with wallet   = $enable_wallet"
 echo "  with gui / qt = $bitcoin_enable_qt"
@@ -1195,7 +1195,7 @@ echo "  with bench    = $use_bench"
 echo "  with upnp     = $use_upnp"
 echo "  debug enabled = $enable_debug"
 echo "  werror        = $enable_werror"
-echo 
+echo
 echo "  target os     = $TARGET_OS"
 echo "  build os      = $BUILD_OS"
 echo
@@ -1205,4 +1205,4 @@ echo "  CPPFLAGS      = $CPPFLAGS"
 echo "  CXX           = $CXX"
 echo "  CXXFLAGS      = $CXXFLAGS"
 echo "  LDFLAGS       = $LDFLAGS"
-echo 
+echo

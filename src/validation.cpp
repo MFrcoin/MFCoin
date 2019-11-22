@@ -649,6 +649,10 @@ bool AcceptToMemoryPoolWorker(CTxMemPool& pool, CValidationState& state, const C
     if (!CheckTransaction(tx, state))
         return false; // state filled in by CheckTransaction
 
+    // transaction timestamp later than max tx age
+    if (GetTime() - MAX_TX_AGE > tx.nTime)
+        return state.Invalid(false, REJECT_INVALID, "old-tx-time");
+
     if (!CheckMinTxOut(ptx))
         return error("AcceptToMemoryPool: : CheckMinTxOut failed");
 
@@ -3467,7 +3471,7 @@ bool ProcessNewBlockHeaders(int32_t& nPoSTemperature, const uint256& lastAccepte
                 nPoSTemperature += POW_HEADER_COOLING;
                 return false;
             }
-            if (ppindex) 
+            if (ppindex)
                 *ppindex = pindex;
 
             if(!fInitialDownload) {

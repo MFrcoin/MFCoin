@@ -90,7 +90,7 @@ static const size_t DEFAULT_MAXSENDBUFFER    = 1 * 1000;
 static const ServiceFlags REQUIRED_SERVICES = NODE_NETWORK;
 
 // NOTE: When adjusting this, update rpcnet:setban's help ("24h")
-static const unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 60 * 24;  // Default 24-hour ban
+static const unsigned int DEFAULT_MISBEHAVING_BANTIME = 60 * 10;  // Default 10-min ban
 
 /** mfcoin: Number of consecutive PoS headers are allowed from a single peer. Used to prevent out of memory attack. */
 static const unsigned int MAX_CONSECUTIVE_POS_HEADERS = 1000;
