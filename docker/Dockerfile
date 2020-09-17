@@ -8,7 +8,7 @@ ARG USE_OLD_BERKLEYDB=true
 COPY --from=kamehb/berkleydb4.8-dev /opt/db /opt/db
 
 RUN apt update && \
-    apt install -y build-essential libc6-dev binutils git autoconf pkg-config automake libtool libdb-dev libdb++-dev libboost-all-dev libssl-dev libminiupnpc-dev libevent-dev
+    apt install -y build-essential libc6-dev binutils git autoconf pkg-config automake libtool libdb-dev libdb++-dev libboost-all-dev libssl-dev libminiupnpc-dev libevent-dev dpkg-dev
 
 COPY . /MFCoin
 
@@ -50,6 +50,7 @@ RUN export LDFLAGS="$(cat /ldflags)" && \
     export WITHOUT_WALLET="$(cat /nowalletflag)" && \
     export WITHOUT_UPNPC="$(cat /noupnpcflag)" && \
     export CFLAGS="-static -static-libgcc -fno-strict-aliasing" && \
+    eval "export $(dpkg-architecture | grep DEB_HOST_MULTIARCH)" && \
     ./configure \
         LDFLAGS="$LDFLAGS" \
         CPPFLAGS="$CPPFLAGS $CFLAGS" \
@@ -63,6 +64,7 @@ RUN export LDFLAGS="$(cat /ldflags)" && \
         --disable-bench \
         --disable-ccache \
         --disable-shared \
+        --with-boost-libdir=/usr/lib/"$DEB_HOST_MULTIARCH" \
         --without-gui
 
 RUN make -j$(nproc --all) && \
